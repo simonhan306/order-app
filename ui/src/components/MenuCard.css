@@ -1,0 +1,78 @@
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fff;
+  max-width: 280px;
+}
+
+.menu-card__image {
+  aspect-ratio: 1;
+  background: #e8e8e8;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.menu-card__image-placeholder {
+  color: #999;
+  font-size: 0.875rem;
+}
+
+.menu-card__name {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.menu-card__price {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.menu-card__desc {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.menu-card__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.menu-card__option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.menu-card__option input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.menu-card__btn {
+  margin-top: auto;
+  padding: 0.6rem 1rem;
+  border: 1px solid #1a5fb4;
+  background: #1a5fb4;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.menu-card__btn:hover {
+  background: #155a9e;
+  border-color: #155a9e;
+}

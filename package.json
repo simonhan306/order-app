@@ -1,0 +1,9 @@
+{
+  "name": "order-app",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix ui",
+    "build": "npm run build --prefix ui",
+    "preview": "npm run preview --prefix ui"
+  }
+}
