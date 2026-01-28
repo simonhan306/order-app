@@ -8,7 +8,7 @@ function makeCartKey(menuId, optionIds) {
   return `${menuId}-${[...optionIds].sort().join(',')}`
 }
 
-export default function OrderPage({ cart, setCart }) {
+export default function OrderPage({ cart, setCart, onSubmitOrder }) {
   const addToCart = useCallback(
     (payload) => {
       const key = makeCartKey(payload.id, payload.optionIds)
@@ -39,10 +39,10 @@ export default function OrderPage({ cart, setCart }) {
 
   const handleOrder = useCallback(() => {
     if (cart.length === 0) return
-    const totalQty = cart.reduce((s, i) => s + i.quantity, 0)
-    alert(`주문 접수되었습니다. (총 ${totalQty}개)`)
+    onSubmitOrder(cart)
     setCart([])
-  }, [cart, setCart])
+    alert('주문 접수되었습니다.')
+  }, [cart, onSubmitOrder, setCart])
 
   return (
     <main className="order-page">

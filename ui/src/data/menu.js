@@ -10,3 +10,6 @@ export const MENU_LIST = [
   { id: 'vanilla-latte', name: '바닐라라떼', price: 5500, description: '바닐라 시럽이 더해진 라떼.' },
   { id: 'espresso', name: '에스프레소', price: 3500, description: '강렬한 원샷 에스프레소.' },
 ]
+
+/** 관리자 재고 현황에 노출할 메뉴 ID (3개) */
+export const ADMIN_STOCK_MENU_IDS = ['americano-ice', 'americano-hot', 'cafe-latte']
