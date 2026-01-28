@@ -9,6 +9,7 @@ export default function Header({ currentScreen, onNavigate }) {
           type="button"
           className={`header-nav-item ${currentScreen === 'order' ? 'header-nav-item--active' : ''}`}
           onClick={() => onNavigate('order')}
+          aria-current={currentScreen === 'order' ? 'page' : undefined}
         >
           주문하기
         </button>
@@ -16,6 +17,7 @@ export default function Header({ currentScreen, onNavigate }) {
           type="button"
           className={`header-nav-item ${currentScreen === 'admin' ? 'header-nav-item--active' : ''}`}
           onClick={() => onNavigate('admin')}
+          aria-current={currentScreen === 'admin' ? 'page' : undefined}
         >
           관리자
         </button>

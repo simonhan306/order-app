@@ -79,6 +79,7 @@ export default function AdminPage({ orders, setOrders, inventory, setInventory }
                     className="admin-stock__btn"
                     onClick={() => adjustStock(menu.id, -1)}
                     disabled={count <= 0}
+                    aria-label={`${menu.name} 재고 감소`}
                   >
                     -
                   </button>
@@ -86,6 +87,7 @@ export default function AdminPage({ orders, setOrders, inventory, setInventory }
                     type="button"
                     className="admin-stock__btn"
                     onClick={() => adjustStock(menu.id, 1)}
+                    aria-label={`${menu.name} 재고 증가`}
                   >
                     +
                   </button>

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import Header from './components/Header'
 import OrderPage from './components/OrderPage'
-import AdminPage from './components/AdminPage.jsx'
+import AdminPage from './components/AdminPage'
 import { ADMIN_STOCK_MENU_IDS } from './data/menu'
 import './App.css'
 
@@ -18,7 +18,7 @@ export default function App() {
   const submitOrder = useCallback((cartItems) => {
     const totalAmount = cartItems.reduce((sum, it) => sum + it.subtotal, 0)
     const order = {
-      id: Date.now(),
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
       createdAt: new Date(),
       items: cartItems.map((it) => ({
         menuName: it.menuName,
