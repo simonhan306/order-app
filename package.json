@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "dev": "npm run dev --prefix ui",
+    "dev:server": "npm run dev --prefix server",
+    "start:server": "npm run start --prefix server",
     "build": "npm run build --prefix ui",
     "preview": "npm run preview --prefix ui"
   }
