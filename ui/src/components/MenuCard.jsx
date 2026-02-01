@@ -29,7 +29,11 @@ export default function MenuCard({ item, onAddToCart }) {
   return (
     <article className="menu-card">
       <div className="menu-card__image" aria-hidden>
-        <span className="menu-card__image-placeholder">이미지</span>
+        {item.image ? (
+          <img src={item.image} alt={item.name} className="menu-card__img" />
+        ) : (
+          <span className="menu-card__image-placeholder">이미지</span>
+        )}
       </div>
       <h3 className="menu-card__name">{item.name}</h3>
       <p className="menu-card__price">{Number(item.price).toLocaleString('ko-KR')}원</p>

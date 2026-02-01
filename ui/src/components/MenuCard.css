@@ -18,6 +18,13 @@
   margin-bottom: 0.75rem;
 }
 
+.menu-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
 .menu-card__image-placeholder {
   color: #999;
   font-size: 0.875rem;
