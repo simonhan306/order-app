@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { MENU_LIST, ADMIN_STOCK_MENU_IDS } from '../data/menu'
+import { useCallback, useEffect, useState } from 'react'
+import { api } from '../api/client'
 import './AdminPage.css'
 
 function formatOrderDate(date) {
@@ -17,34 +17,68 @@ function getStockStatus(count) {
   return '정상'
 }
 
-export default function AdminPage({ orders, setOrders, inventory, setInventory }) {
-  const totalOrders = orders.length
-  const countReceived = orders.filter((o) => o.status === '주문접수').length
-  const countInProgress = orders.filter((o) => o.status === '제조중').length
-  const countCompleted = orders.filter((o) => o.status === '제조완료').length
+const STATUS_FLOW = {
+  '주문 접수': { next: '제조 중', buttonLabel: '제조 시작' },
+  '제조 중': { next: '완료', buttonLabel: '제조 완료' },
+  완료: null,
+}
 
-  const adjustStock = useCallback(
-    (menuId, delta) => {
-      setInventory((prev) => {
-        const next = { ...prev }
-        const cur = next[menuId] ?? 0
-        next[menuId] = Math.max(0, cur + delta)
-        return next
-      })
-    },
-    [setInventory]
-  )
+export default function AdminPage() {
+  const [orders, setOrders] = useState([])
+  const [menus, setMenus] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const updateOrderStatus = useCallback(
-    (orderId, nextStatus) => {
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o))
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const [ordersData, menusData] = await Promise.all([
+        api.getOrders(),
+        api.getMenus(true),
+      ])
+      setOrders(ordersData)
+      setMenus(menusData)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const adjustStock = useCallback(async (menuId, delta) => {
+    try {
+      const updated = await api.updateStock(menuId, delta)
+      setMenus((prev) =>
+        prev.map((m) => (m.id === menuId ? { ...m, stock: updated.stock } : m))
       )
-    },
-    [setOrders]
-  )
+    } catch (err) {
+      alert(err.message || '재고 조정 실패')
+    }
+  }, [])
 
-  const stockMenus = MENU_LIST.filter((m) => ADMIN_STOCK_MENU_IDS.includes(m.id))
+  const updateOrderStatus = useCallback(async (orderId, nextStatus) => {
+    try {
+      const updated = await api.updateOrderStatus(orderId, nextStatus)
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, ...updated } : o))
+      )
+    } catch (err) {
+      alert(err.message || '상태 변경 실패')
+    }
+  }, [])
+
+  const totalOrders = orders.length
+  const countReceived = orders.filter((o) => o.status === '주문 접수').length
+  const countInProgress = orders.filter((o) => o.status === '제조 중').length
+  const countCompleted = orders.filter((o) => o.status === '완료').length
+
+  if (loading) return <main className="admin-page"><p className="admin-page__loading">불러오는 중...</p></main>
+  if (error) return <main className="admin-page"><p className="admin-page__error">오류: {error}</p></main>
 
   return (
     <main className="admin-page">
@@ -61,8 +95,8 @@ export default function AdminPage({ orders, setOrders, inventory, setInventory }
       <section className="admin-section admin-stock">
         <h2 className="admin-section__title">재고 현황</h2>
         <div className="admin-stock__list">
-          {stockMenus.map((menu) => {
-            const count = inventory[menu.id] ?? 0
+          {menus.map((menu) => {
+            const count = menu.stock ?? 0
             const status = getStockStatus(count)
             return (
               <div key={menu.id} className="admin-stock__item">
@@ -104,50 +138,43 @@ export default function AdminPage({ orders, setOrders, inventory, setInventory }
           <p className="admin-orders__empty">접수된 주문이 없습니다.</p>
         ) : (
           <ul className="admin-orders__list">
-            {orders.map((order) => (
-              <li key={order.id} className="admin-orders__item">
-                <div className="admin-orders__info">
-                  <span className="admin-orders__date">
-                    {formatOrderDate(order.createdAt)}
-                  </span>
-                  <span className="admin-orders__menu">
-                    {order.items
-                      .map((it) =>
-                        it.optionLabels?.length
-                          ? `${it.menuName} (${it.optionLabels.join(', ')}) x ${it.quantity}`
-                          : `${it.menuName} x ${it.quantity}`
-                      )
-                      .join(', ')}
-                  </span>
-                  <span className="admin-orders__amount">
-                    {order.totalAmount.toLocaleString('ko-KR')}원
-                  </span>
-                </div>
-                <div className="admin-orders__status">
-                  {order.status === '주문접수' && (
-                    <button
-                      type="button"
-                      className="admin-orders__action admin-orders__action--primary"
-                      onClick={() => updateOrderStatus(order.id, '제조중')}
-                    >
-                      제조 시작
-                    </button>
-                  )}
-                  {order.status === '제조중' && (
-                    <button
-                      type="button"
-                      className="admin-orders__action admin-orders__action--primary"
-                      onClick={() => updateOrderStatus(order.id, '제조완료')}
-                    >
-                      제조 완료
-                    </button>
-                  )}
-                  {order.status === '제조완료' && (
-                    <span className="admin-orders__label">제조 완료</span>
-                  )}
-                </div>
-              </li>
-            ))}
+            {orders.map((order) => {
+              const flow = STATUS_FLOW[order.status]
+              return (
+                <li key={order.id} className="admin-orders__item">
+                  <div className="admin-orders__info">
+                    <span className="admin-orders__date">
+                      {formatOrderDate(order.ordered_at)}
+                    </span>
+                    <span className="admin-orders__menu">
+                      {(order.items || [])
+                        .map((it) =>
+                          it.optionLabels?.length
+                            ? `${it.menuName} (${it.optionLabels.join(', ')}) x ${it.quantity}`
+                            : `${it.menuName} x ${it.quantity}`
+                        )
+                        .join(', ')}
+                    </span>
+                    <span className="admin-orders__amount">
+                      {Number(order.total_amount).toLocaleString('ko-KR')}원
+                    </span>
+                  </div>
+                  <div className="admin-orders__status">
+                    {flow ? (
+                      <button
+                        type="button"
+                        className="admin-orders__action admin-orders__action--primary"
+                        onClick={() => updateOrderStatus(order.id, flow.next)}
+                      >
+                        {flow.buttonLabel}
+                      </button>
+                    ) : (
+                      <span className="admin-orders__label">제조 완료</span>
+                    )}
+                  </div>
+                </li>
+              )
+            })}
           </ul>
         )}
       </section>

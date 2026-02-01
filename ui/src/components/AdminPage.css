@@ -4,6 +4,16 @@
   padding: 1.5rem;
 }
 
+.admin-page__loading,
+.admin-page__error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.admin-page__error {
+  color: #c00;
+}
+
 .admin-section {
   background: #f5f5f5;
   border-radius: 12px;

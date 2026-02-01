@@ -2,6 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { query } from './db/index.js';
+import menusRouter from './routes/menus.js';
+import ordersRouter from './routes/orders.js';
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -16,8 +18,8 @@ app.get('/', (req, res) => {
     message: 'Order App API Server',
     endpoints: {
       health: 'GET /api/health',
-      menus: 'GET /api/menus (예정)',
-      orders: 'GET /api/orders, POST /api/orders (예정)',
+      menus: 'GET /api/menus',
+      orders: 'GET /api/orders, POST /api/orders',
     },
     frontend: 'http://localhost:5173',
   });
@@ -33,9 +35,9 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// API routes will be added here
-// app.use('/api/menus', menusRouter);
-// app.use('/api/orders', ordersRouter);
+// API routes
+app.use('/api/menus', menusRouter);
+app.use('/api/orders', ordersRouter);
 
 // 404 handler
 app.use((req, res) => {

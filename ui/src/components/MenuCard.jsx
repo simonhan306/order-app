@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { MENU_OPTIONS } from '../data/menu'
 import './MenuCard.css'
 
 export default function MenuCard({ item, onAddToCart }) {
   const [optionIds, setOptionIds] = useState([])
+  const options = item.options || []
 
   const toggleOption = (id) => {
     setOptionIds((prev) =>
@@ -11,15 +11,19 @@ export default function MenuCard({ item, onAddToCart }) {
     )
   }
 
-  const optionTotal = MENU_OPTIONS.filter((o) => optionIds.includes(o.id)).reduce(
-    (sum, o) => sum + o.price,
-    0
-  )
-  const unitPrice = item.price + optionTotal
+  const optionTotal = options
+    .filter((o) => optionIds.includes(o.id))
+    .reduce((sum, o) => sum + (o.price ?? o.option_price ?? 0), 0)
+  const unitPrice = (item.price ?? 0) + optionTotal
 
   const handleAdd = () => {
-    const options = MENU_OPTIONS.filter((o) => optionIds.includes(o.id))
-    onAddToCart({ ...item, optionIds, options, unitPrice })
+    const selectedOptions = options.filter((o) => optionIds.includes(o.id))
+    onAddToCart({
+      ...item,
+      optionIds: [...optionIds],
+      options: selectedOptions,
+      unitPrice,
+    })
   }
 
   return (
@@ -28,21 +32,24 @@ export default function MenuCard({ item, onAddToCart }) {
         <span className="menu-card__image-placeholder">이미지</span>
       </div>
       <h3 className="menu-card__name">{item.name}</h3>
-      <p className="menu-card__price">{item.price.toLocaleString('ko-KR')}원</p>
-      <p className="menu-card__desc">{item.description}</p>
+      <p className="menu-card__price">{Number(item.price).toLocaleString('ko-KR')}원</p>
+      <p className="menu-card__desc">{item.description || ''}</p>
       <div className="menu-card__options">
-        {MENU_OPTIONS.map((opt) => (
-          <label key={opt.id} className="menu-card__option">
-            <input
-              type="checkbox"
-              checked={optionIds.includes(opt.id)}
-              onChange={() => toggleOption(opt.id)}
-            />
-            <span>
-              {opt.label} ({opt.price > 0 ? `+${opt.price.toLocaleString('ko-KR')}원` : '+0원'})
-            </span>
-          </label>
-        ))}
+        {options.map((opt) => {
+          const price = opt.price ?? opt.option_price ?? 0
+          return (
+            <label key={opt.id} className="menu-card__option">
+              <input
+                type="checkbox"
+                checked={optionIds.includes(opt.id)}
+                onChange={() => toggleOption(opt.id)}
+              />
+              <span>
+                {opt.name || opt.label} ({price > 0 ? `+${price.toLocaleString('ko-KR')}원` : '+0원'})
+              </span>
+            </label>
+          )
+        })}
       </div>
       <button type="button" className="menu-card__btn" onClick={handleAdd}>
         담기

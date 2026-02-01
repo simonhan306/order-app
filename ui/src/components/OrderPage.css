@@ -4,6 +4,16 @@
   padding: 1.5rem;
 }
 
+.order-page__loading,
+.order-page__error {
+  padding: 2rem;
+  text-align: center;
+}
+
+.order-page__error {
+  color: #c00;
+}
+
 .order-page__menu {
   display: flex;
   flex-wrap: wrap;

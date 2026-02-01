@@ -1,17 +1,30 @@
-import { useCallback } from 'react'
-import { MENU_LIST } from '../data/menu'
+import { useCallback, useEffect, useState } from 'react'
+import { api } from '../api/client'
 import MenuCard from './MenuCard'
 import Cart from './Cart'
 import './OrderPage.css'
 
 function makeCartKey(menuId, optionIds) {
-  return `${menuId}-${[...optionIds].sort().join(',')}`
+  return `${menuId}-${[...(optionIds || [])].sort((a, b) => a - b).join(',')}`
 }
 
-export default function OrderPage({ cart, setCart, onSubmitOrder }) {
+export default function OrderPage({ cart, setCart }) {
+  const [menus, setMenus] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    api
+      .getMenus(false)
+      .then(setMenus)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
   const addToCart = useCallback(
     (payload) => {
-      const key = makeCartKey(payload.id, payload.optionIds)
+      const optionIds = payload.optionIds || []
+      const key = makeCartKey(payload.id, optionIds)
       setCart((prev) => {
         const found = prev.find((it) => it.key === key)
         if (found) {
@@ -21,11 +34,12 @@ export default function OrderPage({ cart, setCart, onSubmitOrder }) {
               : it
           )
         }
-        const optionLabels = payload.options.map((o) => o.label)
+        const optionLabels = (payload.options || []).map((o) => o.name || o.label)
         const newItem = {
           key,
           menuId: payload.id,
           menuName: payload.name,
+          optionIds,
           optionLabels,
           unitPrice: payload.unitPrice,
           quantity: 1,
@@ -37,17 +51,34 @@ export default function OrderPage({ cart, setCart, onSubmitOrder }) {
     [setCart]
   )
 
-  const handleOrder = useCallback(() => {
+  const handleOrder = useCallback(async () => {
     if (cart.length === 0) return
-    onSubmitOrder(cart)
-    setCart([])
-    alert('주문 접수되었습니다.')
-  }, [cart, onSubmitOrder, setCart])
+    const totalAmount = cart.reduce((sum, it) => sum + it.subtotal, 0)
+    const body = {
+      items: cart.map((it) => ({
+        menuId: it.menuId,
+        quantity: it.quantity,
+        optionIds: it.optionIds || [],
+        amount: it.subtotal,
+      })),
+      totalAmount,
+    }
+    try {
+      await api.createOrder(body)
+      setCart([])
+      alert('주문 접수되었습니다.')
+    } catch (err) {
+      alert(err.message || '주문에 실패했습니다.')
+    }
+  }, [cart, setCart])
+
+  if (loading) return <main className="order-page"><p className="order-page__loading">메뉴를 불러오는 중...</p></main>
+  if (error) return <main className="order-page"><p className="order-page__error">메뉴 로드 실패: {error}</p></main>
 
   return (
     <main className="order-page">
       <div className="order-page__menu">
-        {MENU_LIST.map((item) => (
+        {menus.map((item) => (
           <MenuCard key={item.id} item={item} onAddToCart={addToCart} />
         ))}
       </div>
