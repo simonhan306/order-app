@@ -11,12 +11,14 @@ import pg from 'pg';
  *   - cafe-latte.jpg     → 카페라떼
  */
 async function updateImages() {
+  const isProduction = process.env.DB_HOST?.includes('render.com');
   const client = new pg.Client({
     host: process.env.DB_HOST ?? 'localhost',
     port: Number(process.env.DB_PORT) ?? 5432,
     user: process.env.DB_USER ?? 'postgres',
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME ?? 'order_app',
+    ...(isProduction && { ssl: { rejectUnauthorized: false } }),
   });
 
   const imageMap = {
