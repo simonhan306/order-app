@@ -1,5 +1,12 @@
 # Render 프론트엔드 배포 가이드
 
+## ⚠️ 중요: 서비스 유형
+
+프론트엔드는 반드시 **Static Site**로 배포해야 합니다.  
+**Web Service**로 설정하면 `Cannot find module '.../server/index.js'` 오류가 발생합니다.
+
+---
+
 ## 1. 수정된 코드
 
 ### api/client.js
@@ -12,9 +19,9 @@
 
 ## 2. Render 배포 절차
 
-### Step 1: Static Site 생성
-1. [Render Dashboard](https://dashboard.render.com) → **New +** → **Static Site**
-2. 저장소 연결 (GitHub/GitLab)
+### Step 1: Static Site 생성 (Web Service 아님!)
+1. [Render Dashboard](https://dashboard.render.com) → **New +** → **Static Site** 선택
+2. 같은 저장소를 Web Service가 아닌 **Static Site**로 연결
 
 ### Step 2: 설정
 
@@ -49,3 +56,23 @@
   - ✅ `https://order-app-backend-od8d.onrender.com`
   - ❌ `https://order-app-backend-od8d.onrender.com/api`
 - **CORS**: 백엔드에 CORS가 설정되어 있어야 프론트엔드에서 API 호출이 됩니다.
+
+---
+
+## 4. 오류 해결
+
+### `Cannot find module '.../server/index.js'` / `Running 'node index.js'`
+
+| 원인 | 해결 |
+|------|------|
+| **Web Service**로 생성됨 | 서비스를 삭제하고 **Static Site**로 새로 생성 |
+| Build Command가 `npm install`만 설정됨 | `npm install && npm run build` 로 변경 |
+| Root Directory 미설정 | **ui** 로 설정 |
+
+### 설정 체크리스트
+
+- [ ] 서비스 유형: **Static Site** (Web Service X)
+- [ ] Root Directory: **ui**
+- [ ] Build Command: **npm install && npm run build**
+- [ ] Publish Directory: **dist**
+- [ ] 환경 변수: `VITE_API_BASE_URL` = 백엔드 URL
