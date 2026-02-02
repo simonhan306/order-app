@@ -1,7 +1,10 @@
-const API_BASE = '/api'
+// 개발: Vite 프록시로 /api 사용. 배포: VITE_API_BASE_URL + /api
+const BASE = import.meta.env.VITE_API_BASE_URL
+const API_BASE = BASE ? `${BASE.replace(/\/$/, '')}/api` : '/api'
 
 async function request(path, options = {}) {
-  const url = `${API_BASE}${path}`
+  const base = API_BASE.replace(/\/$/, '')
+  const url = `${base}${path.startsWith('/') ? path : '/' + path}`
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
